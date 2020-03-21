@@ -17,7 +17,7 @@
 rootProject.buildscript {
   apply from: "https://github.com/rosjava/rosjava_bootstrap/raw/kinetic/buildscript.gradle"
   dependencies {
-    classpath "com.android.tools.build:gradle:3.2.1"
+    classpath "com.android.tools.build:gradle:3.5.3"
   }
 
   allprojects {
@@ -25,6 +25,10 @@ rootProject.buildscript {
       jcenter()
       maven {
         url "https://maven.google.com"
+      }
+      mavenLocal()
+      maven {
+        url "file:///home/yc_qian/rosjava/devel/share/maven"
       }
     }
   }

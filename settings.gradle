@@ -1,3 +1,4 @@
+include ':image_subscriber'
 /*
  * Copyright (C) 2011 Google Inc.
  *
@@ -16,13 +17,12 @@
 
 include "android_core_components"
 include "android_acm_serial"
-include "android_benchmarks"
+//include "android_benchmarks"
 include "android_tutorial_camera"
 include "android_tutorial_image_transport"
-include "android_tutorial_map_viewer"
 include "android_tutorial_pubsub"
-include "android_tutorial_teleop"
-include "docs"
+//include "docs"
+include "phonenode"
 
 // TODO(damonkohler): The following projects are not included in the
 // multi-project yet till its sorted whereabouts they should actually live

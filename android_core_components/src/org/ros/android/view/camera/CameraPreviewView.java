@@ -24,6 +24,7 @@ import android.hardware.Camera;
 import android.hardware.Camera.PreviewCallback;
 import android.hardware.Camera.Size;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.view.View;
@@ -52,6 +53,7 @@ public class CameraPreviewView extends ViewGroup {
   private final class BufferingPreviewCallback implements PreviewCallback {
     @Override
     public void onPreviewFrame(byte[] data, Camera camera) {
+      Log.i("onPreviewFrame", Thread.currentThread().getName());
       Preconditions.checkArgument(camera == CameraPreviewView.this.camera);
       Preconditions.checkArgument(data == previewBuffer);
       if (rawImageListener != null) {
@@ -64,10 +66,12 @@ public class CameraPreviewView extends ViewGroup {
   private final class SurfaceHolderCallback implements SurfaceHolder.Callback {
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
+      Log.i("preview", "change");
     }
 
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
+      Log.i("preview", "create");
       try {
         if (camera != null) {
           camera.setPreviewDisplay(holder);
@@ -79,6 +83,7 @@ public class CameraPreviewView extends ViewGroup {
 
     @Override
     public void surfaceDestroyed(SurfaceHolder holder) {
+      Log.i("preview", "destroy");
       releaseCamera();
     }
   }

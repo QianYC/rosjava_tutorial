@@ -22,6 +22,8 @@ import android.graphics.ImageFormat;
 import android.graphics.Rect;
 import android.graphics.YuvImage;
 import android.hardware.Camera.Size;
+import android.util.Log;
+
 import org.jboss.netty.buffer.ChannelBufferOutputStream;
 import org.ros.internal.message.MessageBuffers;
 import org.ros.message.Time;
@@ -34,7 +36,7 @@ import org.ros.node.topic.Publisher;
  * 
  * @author damonkohler@google.com (Damon Kohler)
  */
-class CompressedImagePublisher implements RawImageListener {
+public class CompressedImagePublisher implements RawImageListener {
 
   private final ConnectedNode connectedNode;
   private final Publisher<sensor_msgs.CompressedImage> imagePublisher;
@@ -59,6 +61,7 @@ class CompressedImagePublisher implements RawImageListener {
 
   @Override
   public void onNewRawImage(byte[] data, Size size) {
+    Log.i("onNewRawImage", Thread.currentThread().getName());
     Preconditions.checkNotNull(data);
     Preconditions.checkNotNull(size);
     if (data != rawImageBuffer || !size.equals(rawImageSize)) {

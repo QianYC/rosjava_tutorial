@@ -14,9 +14,9 @@
  * the License.
  */
 
-task wrapper(type: Wrapper) {
-    gradleVersion = "4.10.2"
-}
+//task wrapper(type: Wrapper) {
+//    gradleVersion = "5.4.1"
+//}
 
 buildscript {
     apply from: project.file("buildscript.gradle")
@@ -26,10 +26,11 @@ apply plugin: "catkin"
 
 allprojects {
     group "org.ros.android_core"
+//    group "nju.ycqian"
     version = project.catkin.pkg.version
 }
 
-configure(subprojects.findAll { it.name.startsWith("android_") }) {
+configure(subprojects.findAll { true }) {
     /*
      * The android plugin configures a few things:
      *
