@@ -15,19 +15,24 @@
  */
 
 dependencies {
-  compile project(':android_core_components')
+    compile project(':android_core_components')
 }
 
 apply plugin: 'com.android.application'
 
 android {
-  compileSdkVersion 28
+    compileSdkVersion 28
 
-  defaultConfig {
-    minSdkVersion 16
-    applicationId "org.ros.android.android_tutorial_camera"
-    targetSdkVersion 28
-    versionCode 1
-    versionName "1.0"
-  }
+    defaultConfig {
+        minSdkVersion 16
+        applicationId "org.ros.android.android_tutorial_camera"
+        targetSdkVersion 28
+        versionCode 1
+        versionName "1.0"
+    }
+    compileOptions {
+        sourceCompatibility = 1.8
+        targetCompatibility = 1.8
+    }
+    buildToolsVersion = '29.0.2'
 }

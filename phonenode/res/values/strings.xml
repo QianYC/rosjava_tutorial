@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">PhoneNode</string>
+    <string name="static_mode">摆拍</string>
+    <string name="dynamic_mode">抓拍</string>
 </resources>

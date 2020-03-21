@@ -2,6 +2,7 @@ package nju.ycqian.phonenode;
 
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.media.MediaActionSound;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -11,6 +12,7 @@ import android.util.Size;
 import android.view.TextureView;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.Switch;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -33,10 +35,16 @@ import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class MainActivity extends CompatROSActivity{
+public class MainActivity extends CompatROSActivity {
+    /**
+     * used to play shutter sound when taking picture
+     */
+    private MediaActionSound soundPlayer;
     private PhoneNode node;
     private CameraServer cameraServer;
+    private StateClient stateClient;
     private TextureView view;
+    private Switch modeSwitch;
     private Preview preview;
     private ImageAnalysis analysis;
     private ImageCapture capture;
@@ -45,7 +53,9 @@ public class MainActivity extends CompatROSActivity{
     private Size analysisSize = new Size(320, 240);
 
     public MainActivity() {
-        super("PhoneNode","PhoneNode");
+        super("PhoneNode", "PhoneNode");
+        soundPlayer = new MediaActionSound();
+        soundPlayer.load(MediaActionSound.SHUTTER_CLICK);
     }
 
     @Override
@@ -58,9 +68,20 @@ public class MainActivity extends CompatROSActivity{
 
         node = new PhoneNode(this);
         cameraServer = new CameraServer(this);
+        stateClient = new StateClient();
         Log.i("Phone Node", "create");
 
         view = findViewById(R.id.textureView);
+        modeSwitch = findViewById(R.id.modeSwitch);
+        modeSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (isChecked) {
+                buttonView.setText(R.string.static_mode);
+                stateClient.changeState(true);
+            } else {
+                buttonView.setText(R.string.dynamic_mode);
+                stateClient.changeState(false);
+            }
+        });
 
         PreviewConfig previewConfig = new PreviewConfig.Builder()
                 .setTargetRotation(getWindowManager().getDefaultDisplay().getRotation())
@@ -96,7 +117,9 @@ public class MainActivity extends CompatROSActivity{
             vBuffer.get(analysisBuffer, ySize, vSize);
             uBuffer.get(analysisBuffer, ySize + vSize, uSize);
 
-            publisher.onNewImage(analysisBuffer, analysisSize);
+            if (publisher != null) {
+                publisher.onNewImage(analysisBuffer, analysisSize);
+            }
         });
 
         ImageCaptureConfig captureConfig = new ImageCaptureConfig.Builder()
@@ -119,6 +142,7 @@ public class MainActivity extends CompatROSActivity{
                     NodeConfiguration.newPublic(local_network_address.getHostAddress(), getMasterUri());
             nodeMainExecutor.execute(node, nodeConfiguration);
             nodeMainExecutor.execute(cameraServer, nodeConfiguration);
+            nodeMainExecutor.execute(stateClient, nodeConfiguration);
         } catch (IOException e) {
             // Socket problem
             Log.e("Phone Node", "socket error trying to get networking information from the master uri");
@@ -149,6 +173,7 @@ public class MainActivity extends CompatROSActivity{
 
     public void captureCallback() {
         Log.i("capture", "");
+        soundPlayer.play(MediaActionSound.SHUTTER_CLICK);
         capture.takePicture(createImageFile(), new ImageCapture.OnImageSavedListener() {
             @Override
             public void onImageSaved(@NonNull File file) {
@@ -166,6 +191,7 @@ public class MainActivity extends CompatROSActivity{
 
     /**
      * create a file to save the image
+     *
      * @return
      */
     private File createImageFile() {

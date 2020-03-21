@@ -17,31 +17,31 @@
 import org.apache.tools.ant.filters.ReplaceTokens
 
 task javadoc(type: Javadoc) {
-  def javaProjects = rootProject.subprojects.findResults {
-    (it.name != 'docs') ? it : null
-  }
-  source javaProjects.collect { fileTree(dir: "${it.projectDir}/src/main/java") }
-  classpath = files(javaProjects.collect { it.configurations.compile })
-  destinationDir = new File("${buildDir}/html", 'javadoc')
+    def javaProjects = rootProject.subprojects.findResults {
+        (it.name != 'docs') ? it : null
+    }
+    source javaProjects.collect { fileTree(dir: "${it.projectDir}/src/main/java") }
+    classpath = files(javaProjects.collect { it.configurations.compile })
+    destinationDir = new File("${buildDir}/html", 'javadoc')
 }
 
 task copySphinxConf(type: Copy) {
-  from('src/main/sphinx/conf.py.in') {
-    filter(ReplaceTokens, tokens: ['version': rootProject.version])
-  }
-  into 'src/main/sphinx'
-  rename 'conf.py.in', 'conf.py'
+    from('src/main/sphinx/conf.py.in') {
+        filter(ReplaceTokens, tokens: ['version': rootProject.version])
+    }
+    into 'src/main/sphinx'
+    rename 'conf.py.in', 'conf.py'
 }
 
 task docs(type: Exec, dependsOn: [copySphinxConf, javadoc]) {
-  commandLine 'make', 'html'
+    commandLine 'make', 'html'
 }
 
 task clean {
-  doLast {
-    ant.delete dir: 'build'
-    ant.delete file: 'src/main/sphinx/conf.py'
-  }
+    doLast {
+        ant.delete dir: 'build'
+        ant.delete file: 'src/main/sphinx/conf.py'
+    }
 }
 
 /* Dummy task to stop android studio barfing */
