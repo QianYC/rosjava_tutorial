@@ -1,5 +1,6 @@
 package nju.ycqian.phonenode;
 
+import android.annotation.SuppressLint;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.media.MediaActionSound;
@@ -16,12 +17,18 @@ import android.widget.Switch;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.camera.core.CameraControl;
+import androidx.camera.core.CameraInfoUnavailableException;
 import androidx.camera.core.CameraX;
+import androidx.camera.core.DisplayOrientedMeteringPointFactory;
+import androidx.camera.core.FocusMeteringAction;
 import androidx.camera.core.ImageAnalysis;
 import androidx.camera.core.ImageAnalysisConfig;
 import androidx.camera.core.ImageCapture;
 import androidx.camera.core.ImageCaptureConfig;
 import androidx.camera.core.ImageProxy;
+import androidx.camera.core.MeteringPoint;
+import androidx.camera.core.MeteringPointFactory;
 import androidx.camera.core.Preview;
 import androidx.camera.core.PreviewConfig;
 import androidx.core.app.ActivityCompat;
@@ -36,6 +43,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class MainActivity extends CompatROSActivity {
+    private CameraControl cameraControl;
     /**
      * used to play shutter sound when taking picture
      */
@@ -58,6 +66,7 @@ public class MainActivity extends CompatROSActivity {
         soundPlayer.load(MediaActionSound.SHUTTER_CLICK);
     }
 
+    @SuppressLint("RestrictedApi")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -66,12 +75,31 @@ public class MainActivity extends CompatROSActivity {
         setContentView(R.layout.activity_main);
         checkPermissions();
 
+        try {
+            cameraControl = CameraX.getCameraControl(CameraX.LensFacing.BACK);
+        } catch (CameraInfoUnavailableException e) {
+            e.printStackTrace();
+        }
         node = new PhoneNode(this);
         cameraServer = new CameraServer(this);
         stateClient = new StateClient();
         Log.i("Phone Node", "create");
 
         view = findViewById(R.id.textureView);
+        view.setOnTouchListener((v, event) -> {
+//            if (event.getAction() != MotionEvent.ACTION_UP) {
+//                Log.i("view", "not focus");
+//                return false;
+//            }
+            Log.i("view", "focus");
+            MeteringPointFactory factory = new DisplayOrientedMeteringPointFactory(this, CameraX.LensFacing.BACK,
+                    v.getWidth(), v.getHeight());
+            MeteringPoint point = factory.createPoint(event.getX(), event.getY());
+            FocusMeteringAction action = FocusMeteringAction.Builder.from(point).build();
+            cameraControl.startFocusAndMetering(action);
+            return true;
+        });
+
         modeSwitch = findViewById(R.id.modeSwitch);
         modeSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked) {
@@ -171,8 +199,16 @@ public class MainActivity extends CompatROSActivity {
         this.publisher = publisher;
     }
 
-    public void captureCallback() {
+    public void captureCallback(float x, float y) {
         Log.i("capture", "");
+        // scale the metering point to phone preview
+        float ax = view.getWidth() * x / 320, ay = view.getHeight() * y / 240;
+        MeteringPointFactory factory = new DisplayOrientedMeteringPointFactory(this, CameraX.LensFacing.BACK,
+                view.getWidth(), view.getHeight());
+        MeteringPoint point = factory.createPoint(ax, ay);
+        FocusMeteringAction action = FocusMeteringAction.Builder.from(point).build();
+        cameraControl.startFocusAndMetering(action);
+
         soundPlayer.play(MediaActionSound.SHUTTER_CLICK);
         capture.takePicture(createImageFile(), new ImageCapture.OnImageSavedListener() {
             @Override

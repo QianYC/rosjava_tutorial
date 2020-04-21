@@ -7,9 +7,9 @@ import org.ros.node.AbstractNodeMain;
 import org.ros.node.ConnectedNode;
 import org.ros.node.service.ServiceResponseBuilder;
 
-import pi_robot.SrvTrigger;
-import pi_robot.SrvTriggerRequest;
-import pi_robot.SrvTriggerResponse;
+import pi_robot.SrvCapture;
+import pi_robot.SrvCaptureRequest;
+import pi_robot.SrvCaptureResponse;
 
 
 public class CameraServer extends AbstractNodeMain {
@@ -26,10 +26,10 @@ public class CameraServer extends AbstractNodeMain {
 
     @Override
     public void onStart(ConnectedNode connectedNode) {
-        connectedNode.newServiceServer("/camera_service", SrvTrigger._TYPE,
-                (ServiceResponseBuilder<SrvTriggerRequest, SrvTriggerResponse>) (request, response) -> {
+        connectedNode.newServiceServer("/camera_service", SrvCapture._TYPE,
+                (ServiceResponseBuilder<SrvCaptureRequest, SrvCaptureResponse>) (request, response) -> {
                     Log.i("CameraServer on thread : ", Thread.currentThread().getName());
-                    context.captureCallback();
+                    context.captureCallback(request.getX(), request.getY());
                     response.setSuccess(true);
                 });
     }

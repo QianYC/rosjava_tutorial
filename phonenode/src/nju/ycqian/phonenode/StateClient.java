@@ -32,6 +32,9 @@ public class StateClient extends AbstractNodeMain {
     }
 
     public void changeState(boolean value) {
+        if (client == null) {
+            return;
+        }
         SrvTriggerRequest request = client.newMessage();
         request.setState(value);
         client.call(request, new ServiceResponseListener<SrvTriggerResponse>() {

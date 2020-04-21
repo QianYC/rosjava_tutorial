@@ -55,13 +55,3 @@ dependencies {
 //    implementation "org.ros.rosjava_messages:std_srvs:1.11.2"
     implementation "org.ros.rosjava_messages:pi_robot:0.0.1"
 }
-
-dependencies {
-    implementation 'androidx.appcompat:appcompat:+'
-    implementation 'androidx.constraintlayout:constraintlayout:+'
-}
-
-dependencies {
-    implementation 'androidx.appcompat:appcompat:+'
-    implementation 'androidx.constraintlayout:constraintlayout:+'
-}
