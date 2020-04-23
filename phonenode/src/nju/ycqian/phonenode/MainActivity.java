@@ -8,6 +8,8 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
+import android.speech.tts.TextToSpeech;
+import android.speech.tts.TextToSpeechService;
 import android.util.Log;
 import android.util.Size;
 import android.view.TextureView;
@@ -41,9 +43,17 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 public class MainActivity extends CompatROSActivity {
+    /**
+     * to control the camera in finer level
+     */
     private CameraControl cameraControl;
+    /**
+     * convert text to speech
+     */
+//    private TextToSpeech speecher;
     /**
      * used to play shutter sound when taking picture
      */
@@ -62,35 +72,47 @@ public class MainActivity extends CompatROSActivity {
 
     public MainActivity() {
         super("PhoneNode", "PhoneNode");
+    }
+
+    void initSoundPlayer() {
         soundPlayer = new MediaActionSound();
         soundPlayer.load(MediaActionSound.SHUTTER_CLICK);
     }
 
-    @SuppressLint("RestrictedApi")
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        requestWindowFeature(Window.FEATURE_NO_TITLE);
-        getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        setContentView(R.layout.activity_main);
-        checkPermissions();
+//    void initSpeecher() {
+//        speecher = new TextToSpeech(this, new TextToSpeech.OnInitListener() {
+//            @Override
+//            public void onInit(int status) {
+//                Log.i("status = ", "" + status);
+//                if (status == TextToSpeech.SUCCESS) {
+//                    speecher.setLanguage(Locale.CHINA);
+//                    //设置语调
+//                    speecher.setPitch(1f);
+//                    //设置语速
+//                    speecher.setSpeechRate(1f);
+//                }
+//            }
+//        });
+//        speecher.speak("你好", TextToSpeech.QUEUE_FLUSH, null);
+//    }
 
+    void initCameraControl() {
         try {
             cameraControl = CameraX.getCameraControl(CameraX.LensFacing.BACK);
         } catch (CameraInfoUnavailableException e) {
             e.printStackTrace();
         }
+    }
+
+    void initNodes() {
         node = new PhoneNode(this);
         cameraServer = new CameraServer(this);
         stateClient = new StateClient();
-        Log.i("Phone Node", "create");
+    }
 
+    void initView() {
         view = findViewById(R.id.textureView);
         view.setOnTouchListener((v, event) -> {
-//            if (event.getAction() != MotionEvent.ACTION_UP) {
-//                Log.i("view", "not focus");
-//                return false;
-//            }
             Log.i("view", "focus");
             MeteringPointFactory factory = new DisplayOrientedMeteringPointFactory(this, CameraX.LensFacing.BACK,
                     v.getWidth(), v.getHeight());
@@ -110,7 +132,9 @@ public class MainActivity extends CompatROSActivity {
                 stateClient.changeState(false);
             }
         });
+    }
 
+    void initCameraX() {
         PreviewConfig previewConfig = new PreviewConfig.Builder()
                 .setTargetRotation(getWindowManager().getDefaultDisplay().getRotation())
                 .build();
@@ -156,6 +180,22 @@ public class MainActivity extends CompatROSActivity {
         capture = new ImageCapture(captureConfig);
 
         CameraX.bindToLifecycle(this, preview, analysis, capture);
+    }
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        requestWindowFeature(Window.FEATURE_NO_TITLE);
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        setContentView(R.layout.activity_main);
+        checkPermissions();
+        initSoundPlayer();
+        initCameraControl();
+//        initSpeecher();
+        initNodes();
+        initView();
+        initCameraX();
+        Log.i("Phone Node", "create");
     }
 
     @Override
